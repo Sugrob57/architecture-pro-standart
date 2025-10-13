@@ -13,28 +13,28 @@ Person(customer, "Клиент банка", "Ранее уже подтверж�
 
 
 System_Boundary(site, "Сайт банка") {
-    Container(site_deposites_list, "Данные по депозитам", "JavaScript", "Просмотр предложений по депозитам, оформление заявки")   
+    Container(site_deposites_list, "Данные по депозитам", "React.js, PHP", "Просмотр предложений по депозитам, оформление заявки")   
 }
 
 System_Boundary(lk, "Интернет-банк") {
-    Container(lk_deposites_ui, "Модуль управления депозитами", "JavaScript", "Регистрация аккаунтов, управление настройками дома")
-    Container(lk_api, "Backend API", "Go, Docker Container", "Модуль интеграции интернет-банка с другими системами", $tags="backendContainer")
-    ContainerDb(lk_db, "Database", "Postgres SQL", "Временное хранение данных для быстрого предоставления клиентам") 
+    Container(lk_deposites_ui, "Модуль управления депозитами", ".NET Framework 4.5", "Регистрация аккаунтов, управление настройками дома")
+    Container(lk_api, "Backend API", ".NET", "Модуль интеграции интернет-банка с другими системами", $tags="backendContainer")
+    ContainerDb(lk_db, "Database", "MS SQL", "Временное хранение данных для быстрого предоставления клиентам") 
 }
 
 System_Boundary(call, "Система Call-центра") {
-    Container(call_crm, "CRM Call-центра", "Vendor CRM", "Обрабюотка звонков клиентам")   
+    Container(call_crm, "CRM Call-центра", "React.js, Java Spring Boot", "Обрабюотка звонков клиентам")   
 }
 
 System_Boundary(abs, "АБС") {  
-    Container(abs_deposites, "Заявки на депозиты", "Go, Docker Container", "Модуль управляения заявками на депозиты", $tags="backendContainer")
-    Container(abs_rates, "Ставки Центробанка", "Go, Docker Container", "Модуль хранения и управляения ставками Центробанка", $tags="backendContainer")   
-    ContainerDb(abs_db, "Database", "Oracle DB", "Данные основных систем банка")     
+    Container(abs_deposites, "Заявки на депозиты", "Delphi", "Модуль управляения заявками на депозиты", $tags="backendContainer")
+    Container(abs_rates, "Ставки Центробанка", "Delphi", "Модуль хранения и управляения ставками Центробанка", $tags="backendContainer")   
+    ContainerDb(abs_db, "Database", "Oracle", "Данные основных систем банка")     
 }
 
 System_Boundary(kafka, "Kafka") {  
-    Container(kafka_rates, "Новых ставки по депозитам", "Go, Docker Container", "События о новых ставках Центробанка", $tags="backendContainer")
-    Container(kafka_deposites, "Заявки на депозиты", "Go, Docker Container", "События о новых заявках на депозиты", $tags="backendContainer")      
+    Container(kafka_rates, "Новых ставки по депозитам", "", "События о новых ставках Центробанка", $tags="backendContainer")
+    Container(kafka_deposites, "Заявки на депозиты", "", "События о новых заявках на депозиты", $tags="backendContainer")      
 }
 
 System_Boundary(sms_systems, "СМС нотификации") {
