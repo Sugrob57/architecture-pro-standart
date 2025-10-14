@@ -29,11 +29,12 @@ System_Boundary(call, "Система Call-центра") {
 System_Boundary(abs, "АБС") {  
     Container(abs_deposites, "Заявки на депозиты", "Delphi", "Модуль управляения заявками на депозиты", $tags="backendContainer")
     Container(abs_rates, "Ставки Центробанка", "Delphi", "Модуль хранения и управляения ставками Центробанка", $tags="backendContainer")   
-    ContainerDb(abs_db, "Database", "Oracle", "Данные основных систем банка")     
+    ContainerDb(abs_db, "Database", "Oracle", "Данные основных систем банка")   
+    Container(abs_events, "Обработка внешних событий", "Java", "Модуль обработки событий Kafka", $tags="backendContainer")   
 }
 
 System_Boundary(kafka, "Kafka") {  
-    Container(kafka_rates, "Новых ставки по депозитам", "", "События о новых ставках Центробанка", $tags="backendContainer")
+    Container(kafka_rates, "Cтавки Центробанка", "", "События о новых ставках Центробанка", $tags="backendContainer")
     Container(kafka_deposites, "Заявки на депозиты", "", "События о новых заявках на депозиты", $tags="backendContainer")      
 }
 
@@ -43,10 +44,9 @@ System(sms, "СМС-шлюз")
 
 'System_Ext(telecom, "Телеком-профайдер", "Обработка запросов на СМС-нотификации")
 
-
 Rel(customer_new, site, "просматривает предложения по депозитам, оставляет заявку", "HTTPS")
 
-Rel(abs_rates, kafka_rates, "ставки по депозитам", "async, JSON/HTTPS", $tags="async")
+Rel(abs_events, kafka_rates, "ставки по депозитам", "async, JSON/HTTPS", $tags="async")
 Rel(kafka_rates, lk_api, "загружает предложения по депозитам", "async, JSON/HTTPS", $tags="async")
 Rel(lk_api, site_deposites_list, "предоставляет предложения по депозитам", "sync, JSON/HTTPS")
 Rel(site_deposites_list, call_crm, "заявка на депозит", "sync, JSON/HTTPS")
@@ -60,9 +60,8 @@ Rel(customer, lk_deposites_ui, "заявка на депозит", "HTTPS")
 Rel(lk_api, sms, "Подтверждение заявок на депозит", "HTTPS")
 Rel(abs_deposites, lk_db, "Данные по открытым депозитам и предрасчитанным предложениям", "async, JSON/HTTPS", $tags="async")
 Rel(lk_api, kafka_deposites, "Регистрация заявок на депозит", "sync, JSON/HTTPS")
-Rel(kafka_deposites, abs_deposites, "Обработка заявок на депозит", "async, JSON/HTTPS", $tags="async")
+Rel(kafka_deposites, abs_events, "Обработка заявок на депозит", "async, JSON/HTTPS", $tags="async")
 'Rel(telecom, customer, "СМС подтверждения депощита", "sync, XML/HTTPS")
-
 
 'SHOW_LEGEND()
 @enduml

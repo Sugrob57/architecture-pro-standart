@@ -1,0 +1,41 @@
+@startuml C4Container_ToBe
+!include C4_Container.puml
+
+SHOW_PERSON_OUTLINE()
+AddElementTag("backendContainer", $fontColor=$ELEMENT_FONT_COLOR, $bgColor="#335DA5", $shape=EightSidedShape())
+AddRelTag("async", $textColor=$ARROW_FONT_COLOR, $lineColor=$ARROW_COLOR, $lineStyle=DashedLine())
+AddRelTag("sync/async", $textColor=$ARROW_FONT_COLOR, $lineColor=$ARROW_COLOR, $lineStyle=DottedLine())
+
+title Container diagram for Standard Bank "Call center deposites"
+
+Person(customer, "Клиент банка", "")
+
+System_Boundary(call, "Система Call-центра") {
+    Container(call_crm, "CRM Call-центра", "React.js, Java Spring Boot", "Обрабюотка звонков клиентам")   
+}
+
+System_Boundary(abs, "АБС") {  
+    Container(abs_rates, "Ставки Центробанка", "Delphi", "Модуль хранения и управляения ставками Центробанка", $tags="backendContainer")   
+    Container(abs_events, "Обработка внешних событий", "Java", "Модуль обработки событий Kafka", $tags="backendContainer")   
+}
+
+System_Boundary(kafka, "Kafka") {  
+    Container(kafka_rates, "Ставки Центробанка", "", "События о новых ставках Центробанка", $tags="backendContainer")
+}
+
+System_Boundary(call_ext_system, "Call-центр партнера") {
+System_Ext(call_ext, "Система Call-центра", "Обработка звонков клиентов")
+System_Ext(call_ext, "Файловое хранилище", "Файловое хранилизще партнера, предназначенное для публикации ставок")
+}
+
+Rel_Back(call, customer, "Звонит, уточняет ставки по депозитам")
+Rel_Back(call_ext_system, customer, "Звонит, уточняет ставки по депозитам")
+
+Rel(kafka_rates, call_crm, "Публикует актуальные ставки по депозитам", $tags="async")
+Rel(abs_events, call_ext, "Публикует актуальные ставки по депозитам", "files", $tags="async")
+
+Rel(abs_events, kafka_rates, "Cтавки по депозитам", "async, JSON/HTTPS", $tags="async")
+
+
+'SHOW_LEGEND()
+@enduml

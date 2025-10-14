@@ -1,0 +1,29 @@
+@startuml C4Context_ToBe
+!include C4_Context.puml
+
+Person(user, "Клиент банка", "")
+
+System_Boundary(deposites, "Управление депозитами") {
+    System(abs_deposites, "Управление депозитами", "Управление заявками на открытие депозитов")
+   Person(deposites_user, "Сотрудник отдела депозитов", "Обрабатывает заявки на открытие депозитов")
+}
+
+System_Boundary(call, "Call-центр банка") {
+    System(call_system, "Система call-центра банка", "Регистрирует задачи на звонки")
+    Person(call_user, "Сотрудник call-центра", "Выполняет звонки клиентам")
+}
+
+System_Boundary(call_ext_system, "Call-центр партнера") {
+System_Ext(call_ext, "Система Call-центра", "Обработка звонков клиентов")
+}
+
+Rel_Back(call_user, user, "Звонит, уточняет ставки по депозитам")
+Rel_Back(call_ext_system, user, "Звонит, уточняет ставки по депозитам")
+
+Rel(call_user, call_system,  "Просматривает актуальные ставки")
+
+Rel(deposites_user, abs_deposites, "Загружает актуальные ставки по депозитам")
+Rel(abs_deposites, call_system, "Публикует актуальные ставки по депозитам")
+Rel(abs_deposites, call_ext, "Публикует актуальные ставки по депозитам")
+
+@enduml
