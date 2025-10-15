@@ -29,7 +29,6 @@ System_Boundary(call, "Call-центр банка") {
 
 System_Boundary(sms_systems, "СМС нотификации") {
 System(sms, "СМС-шлюз")
-
 }
 
 System_Ext(telecom, "Телеком-профайдер", "Обработка запросов на СМС-нотификации")
