@@ -1,0 +1,67 @@
+@startuml C4Container_ToBe
+!include C4_Container.puml
+
+SHOW_PERSON_OUTLINE()
+AddElementTag("backendContainer", $fontColor=$ELEMENT_FONT_COLOR, $bgColor="#335DA5", $shape=EightSidedShape())
+AddRelTag("async", $textColor=$ARROW_FONT_COLOR, $lineColor=$ARROW_COLOR, $lineStyle=DashedLine())
+AddRelTag("sync/async", $textColor=$ARROW_FONT_COLOR, $lineColor=$ARROW_COLOR, $lineStyle=DottedLine())
+
+title Container diagram for Standard Bank "Deposites online project"
+
+Person(customer_new, "Новый клиент банка", "Посетитель сайта, который пока не приходил в отделение, и не имеет доступа в интернет-банк")
+Person(customer, "Клиент банка", "Ранее уже подтвержден в системах банка")
+
+
+System_Boundary(site, "Сайт банка") {
+    Container(site_deposites_list, "Данные по депозитам", "React.js, PHP", "Просмотр предложений по депозитам, оформление заявки")   
+}
+
+System_Boundary(lk, "Интернет-банк") {
+    Container(lk_deposites_ui, "Модуль управления депозитами", ".NET Framework 4.5", "Регистрация аккаунтов, управление настройками дома")
+    Container(lk_api, "Backend API", ".NET", "Модуль интеграции интернет-банка с другими системами", $tags="backendContainer")
+    ContainerDb(lk_db, "Database", "MS SQL", "Временное хранение данных для быстрого предоставления клиентам") 
+}
+
+System_Boundary(call, "Система Call-центра") {
+    Container(call_crm, "CRM Call-центра", "React.js, Java Spring Boot", "Обрабюотка звонков клиентам")   
+}
+
+System_Boundary(abs, "АБС") {  
+    Container(abs_deposites, "Заявки на депозиты", "Delphi", "Модуль управляения заявками на депозиты", $tags="backendContainer")
+    Container(abs_rates, "Ставки Центробанка", "Delphi", "Модуль хранения и управляения ставками Центробанка", $tags="backendContainer")   
+    ContainerDb(abs_db, "Database", "Oracle", "Данные основных систем банка")   
+    Container(abs_events, "Обработка внешних событий", "Java", "Модуль обработки событий Kafka", $tags="backendContainer")   
+}
+
+System_Boundary(kafka, "Kafka") {  
+    Container(kafka_rates, "Cтавки Центробанка", "", "События о новых ставках Центробанка", $tags="backendContainer")
+    Container(kafka_deposites, "Заявки на депозиты", "", "События о новых заявках на депозиты", $tags="backendContainer")      
+}
+
+System_Boundary(sms_systems, "СМС нотификации") {
+System(sms, "СМС-шлюз")
+}
+
+'System_Ext(telecom, "Телеком-профайдер", "Обработка запросов на СМС-нотификации")
+
+Rel(customer_new, site, "просматривает предложения по депозитам, оставляет заявку", "HTTPS")
+
+Rel(abs_events, kafka_rates, "ставки по депозитам", "async, JSON/HTTPS", $tags="async")
+Rel(kafka_rates, lk_api, "загружает предложения по депозитам", "async, JSON/HTTPS", $tags="async")
+Rel(lk_api, site_deposites_list, "предоставляет предложения по депозитам", "sync, JSON/HTTPS")
+Rel(site_deposites_list, call_crm, "заявка на депозит", "sync, JSON/HTTPS")
+Rel(call_crm, abs_deposites, "заявка на депозит", "async, JSON/HTTPS", $tags="async")
+Rel(abs_deposites, sms, "СМС о смене статуса заявки", "async, JSON/HTTPS", $tags="async")
+
+'Rel(sms, telecom, "СМС нотификации", "sync/async, JSON/HTTPS", $tags="sync/async")
+'Rel(telecom, customer_new, "СМС о смене статуса заявки", "async, XML/HTTPS", $tags="async")
+
+Rel(customer, lk_deposites_ui, "заявка на депозит", "HTTPS")
+Rel(lk_api, sms, "Подтверждение заявок на депозит", "HTTPS")
+Rel(abs_deposites, lk_db, "Данные по открытым депозитам и предрасчитанным предложениям", "async, JSON/HTTPS", $tags="async")
+Rel(lk_api, kafka_deposites, "Регистрация заявок на депозит", "sync, JSON/HTTPS")
+Rel(kafka_deposites, abs_events, "Обработка заявок на депозит", "async, JSON/HTTPS", $tags="async")
+'Rel(telecom, customer, "СМС подтверждения депощита", "sync, XML/HTTPS")
+
+'SHOW_LEGEND()
+@enduml

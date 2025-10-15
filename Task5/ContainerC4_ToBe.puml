@@ -1,0 +1,73 @@
+@startuml C4Container_ToBe
+!include C4_Container.puml
+
+SHOW_PERSON_OUTLINE()
+AddElementTag("backendContainer", $fontColor=$ELEMENT_FONT_COLOR, $bgColor="#335DA5", $shape=EightSidedShape())
+AddRelTag("async", $textColor=$ARROW_FONT_COLOR, $lineColor=$ARROW_COLOR, $lineStyle=DashedLine())
+AddRelTag("sync/async", $textColor=$ARROW_FONT_COLOR, $lineColor=$ARROW_COLOR, $lineStyle=DottedLine())
+
+title Container diagram for Standard Bank "Credits online project"
+
+Person(customer, "Клиент банка", "Ранее уже подтвержден в системах банка")
+
+System_Boundary(site, "Сайт банка") {
+    Container(site_credits, "Данные по кредитным предложениям", "React.js, PHP", "Просмотр предложений по кредитам, оформление заявки")   
+}
+
+System_Boundary(lk, "Интернет-банк") {
+    Container(lk_credits_ui, "Управление заявками на кредиты", ".NET Framework 4.5", "Регистрация аккаунтов, управление настройками дома")
+    Container(lk_api, "Backend API", ".NET", "Backend для клиентских приложений, интеграции с другими системами", $tags="backendContainer")
+}
+
+System_Boundary(abs, "АБС") {  
+    Container(abs_credits, "Заявки на кредиты", "Delphi", "Управляение заявками на кредиты", $tags="backendContainer")  
+    Container(abs_events, "Обработка внешних событий", "Java", "Обработка событий Kafka", $tags="backendContainer")   
+}
+
+System_Boundary(kafka, "Kafka") {  
+    Container(kafka_credits_req, "Заявки на кредиты", "Topic", "События о новых заявках на кредиты", $tags="backendContainer")   
+    Container(kafka_credits, "Обработанные заявки на кредиты", "Topic", "События о завершенных заявках на кредиты", $tags="backendContainer")   
+    Container(kafka_requests, "Предложения по кредитам", "Topic", "Персональные и общие предложения по кредитам", $tags="backendContainer")  
+}
+
+System_Boundary(sms_systems, "СМС нотификации") {
+Container(sms, "СМС-шлюз", "", "Управление нотификациями клиентов", $tags="backendContainer")
+}
+
+System_Boundary(bpm, "Кредитный конвеер") {  
+    Container(bpm_credits, "BPM система", "BPM Comunda", "Управление кредитными заявками", $tags="backendContainer")      
+}
+
+System_Boundary(risks, "Scoring") {  
+    Container(risks_system, "Скоринг", "Python", "Система расчета кредитного скоринга клиента", $tags="backendContainer")      
+}
+
+System_Ext(bki, "БКИ", "апи Бюро Кредитных историй")
+
+
+
+
+Rel(customer, site, "просматривает предложения по кредитам, оставляет заявку", "HTTPS")
+Rel(customer, lk_credits_ui, "просматривает предложения по кредитам, оставляет заявку", "HTTPS")
+Rel(lk_credits_ui, lk_api, "управляет кредитными заявками", "HTTPS")
+Rel(site_credits, lk_api, "управляет кредитными заявками", "HTTPS")
+Rel(lk_api, sms, "Подтверждение заявок на кредит", "HTTPS")
+Rel(risks_system, bki, "Запросы кредитной истории клиентов", "async, JSON/HTTPS", $tags="async")
+Rel(bpm_credits, sms, "СМС о смене статуса заявки", "async, JSON/HTTPS", $tags="async")
+
+Rel(lk_api, kafka_credits_req, "Новые заявки на кредит", "sync, JSON/HTTPS")
+Rel(lk_api, bpm_credits, "Заявки на кредит с согласием запроса в БКИ", "sync, JSON/HTTPS")
+Rel(bpm_credits, bki, "Заявки на кредит с согласием запроса в БКИ", "sync, JSON/HTTPS")
+
+Rel(bpm_credits, risks_system, "Запросы на расчет кредитного рейтинга", "sync/async, JSON/HTTPS", $tags="sync/async")
+Rel(bpm_credits, kafka_credits, "События об одобрении кредита", "async, JSON/HTTPS", $tags="async")
+Rel(kafka_credits_req, bpm_credits, "Новые заявки на кредит", "async, JSON/HTTPS", $tags="async")
+Rel(kafka_credits_req, abs_events, "Новые заявки на кредит", "async, JSON/HTTPS", $tags="async")
+Rel_Back(kafka_credits_req, abs_events, "Новые заявки на кредит", "sync, JSON/HTTPS")
+Rel(kafka_credits, abs_events, "Одобренные заявки на кредит", "sync, JSON/HTTPS","async, JSON/HTTPS", $tags="async")
+Rel_Back(kafka_requests, abs_events, "Общие актуальные предложения по кредитам", "sync, JSON/HTTPS","async, JSON/HTTPS", $tags="async")
+
+Rel(kafka_requests, lk_api, "Предложения по кредитам", "async, JSON/HTTPS", $tags="async")
+
+'SHOW_LEGEND()
+@enduml

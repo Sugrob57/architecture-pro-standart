@@ -1,0 +1,33 @@
+@startuml C4Context_ToBe
+!include C4_Context.puml
+
+Person(user, "Клиент банка", "")
+
+System_Boundary(credits, "Управление кредитами") {
+   System(abs_credits, "Внутренние системы управления кредитами", "Управление заявками на кредиты")
+   Person(credits_user, "Сотрудник отдела кредитования", "Обрабатывает заявки на кредиты")
+}
+
+System_Boundary(site, "Сайт") {
+    System(credits_site, "Кредиты", "Актуальные предложения по кредитам, расссчитанные по общим ставкам")
+}
+
+System_Boundary(lk, "Интернет-банк") {
+    System(lk_credits, "Кредиты", "Просмотр общих предложений, оформление заявок на кредит")
+}
+
+System_Boundary(sms_systems, "СМС нотификации") {
+System(sms, "СМС-шлюз")
+}
+
+Rel(user, credits_site,  "Просматривает предложения открыть кредит, оформляет заявку")
+Rel(user, lk_credits,  "Просматривает предложения открыть кредит, оформляет заявку")
+
+Rel(lk_credits, abs_credits,  "Регистрирует заявку на кредит")
+Rel(credits_site, abs_credits,  "Регистрирует заявку на кредит")
+Rel(credits_user, abs_credits,  "Обрабатывает заявки")
+Rel(abs_credits, sms_systems, "Уведомляет о решении по заявке")
+Rel(sms_systems, user,  "Уведомляет о решении по заявке")
+
+
+@enduml
